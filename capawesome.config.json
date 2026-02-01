@@ -1,0 +1,13 @@
+cat <<EOF > capawesome.config.json
+{
+  "cloud": {
+    "apps": [
+      {
+        "appId": "39104f78-7d94-4f15-81cd-566498dbd179",
+        "dependencyInstallCommand": "npm install && npx cap add ios",
+        "webBuildCommand": "npm run build"
+      }
+    ]
+  }
+}
+EOF
