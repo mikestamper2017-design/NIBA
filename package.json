@@ -1,7 +1,16 @@
 {
+  "name": "niba-classic",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'No web build needed'",
+    "postinstall": "npx cap add ios"
+  },
   "dependencies": {
     "@capacitor/cli": "^4.8.2",
     "@capacitor/core": "^4.8.2",
     "@capacitor/ios": "^4.8.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^4.8.2"
   }
 }
