@@ -1,0 +1,6 @@
+{
+  "appId": "com.niba.classic",
+  "appName": "Niba Classic",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
