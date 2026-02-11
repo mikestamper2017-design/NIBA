@@ -1,0 +1,15 @@
+platforms:
+  ios:
+    version: 1.1.0
+    buildNumber: 72
+    targets:
+      App:
+        plist:
+          NSMicrophoneUsageDescription: "NIBA monitors ambient noise levels to automatically adjust your white noise volume for better sleep."
+
+scripts:
+  pre_build: |
+    echo "Applying Xcode 16 compatibility fix..."
+    # We target the specific project file that causes the 'nil into String' CocoaPods error
+    find . -name 'project.pbxproj' -exec sed -i '' 's/PBXFileSystemSynchronizedRootGroup/PBXGroup/g' {} +
+    echo "Fix applied successfully. Proceeding to CocoaPods."

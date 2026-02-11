@@ -1,0 +1,21 @@
+{
+  "name": "niba",
+  "version": "1.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "capacitor:copy:after": "find ios/App -name 'project.pbxproj' -exec sed -i '' 's/PBXFileSystemSynchronizedRootGroup/PBXGroup/g' {} +"
+  },
+  "dependencies": {
+    "@capacitor/app": "^4.1.1",
+    "@capacitor/cli": "^4.8.2",
+    "@capacitor/core": "^4.8.2",
+    "@capacitor/ios": "^4.8.2",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  }
+}
