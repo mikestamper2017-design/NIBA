@@ -2,5 +2,7 @@
   "appId": "com.niba.classic",
   "appName": "Niba Classic",
   "webDir": "www",
-  "bundledWebRuntime": false
+  "ios": {
+    "buildNumber": "2"
+  }
 }
