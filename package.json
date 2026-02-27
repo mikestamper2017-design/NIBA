@@ -1,13 +1,13 @@
 {
   "name": "niba",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "rm -rf ios && cap add ios && cd ios/App && agvtool new-marketing-version 1.2.2 && agvtool new-version -all 84",
+    "postinstall": "rm -rf ios && cap add ios && cd ios/App && agvtool new-marketing-version 1.2.3 && agvtool new-version -all 85",
     "capacitor:copy:after": "npx @capacitor/assets generate --ios && find ios/App -name 'project.pbxproj' -exec sed -i '' 's/PBXFileSystemSynchronizedRootGroup/PBXGroup/g' {} + && /usr/libexec/PlistBuddy -c \"Add :NSMicrophoneUsageDescription string 'NIBA needs microphone access to monitor background noise levels for sound activation.'\" ios/App/App/Info.plist"
   },
   "dependencies": {
