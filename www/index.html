@@ -32,10 +32,9 @@
             background-size: cover; opacity: 0.4; z-index: 1; pointer-events: none;
         }
         .glass { background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(20px); }
-        /* Smooth visualizer transition */
         .rain-bar { transition: height 0.3s ease; width: 4px; background: rgba(255, 255, 255, 0.6); border-radius: 2px; }
-        .mode-btn { transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.6); }
-        .mode-btn.active { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.5); color: white; }
+        .mode-btn, .timer-btn { transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.6); }
+        .mode-btn.active, .timer-btn.active { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.5); color: white; }
     </style>
 </head>
 <body class="antialiased">
@@ -69,8 +68,20 @@
                         <button onclick="setNoise('canopy')" id="canopyBtn" class="mode-btn flex-1 py-3 rounded-full text-xs tracking-widest uppercase italic font-bold">Canopy</button>
                         <button onclick="setNoise('earth')" id="earthBtn" class="mode-btn flex-1 py-3 rounded-full text-xs tracking-widest uppercase italic font-bold">Earth</button>
                     </div>
+
+                    <div class="mb-8">
+                        <p class="text-[9px] tracking-[0.3em] uppercase text-white/40 mb-4 font-bold">Sleep Timer (Mins)</p>
+                        <div class="flex gap-2 justify-center">
+                            <button onclick="setTimer(15)" id="t15" class="timer-btn w-12 h-12 rounded-full text-[11px] font-bold">15</button>
+                            <button onclick="setTimer(30)" id="t30" class="timer-btn w-12 h-12 rounded-full text-[11px] font-bold">30</button>
+                            <button onclick="setTimer(60)" id="t60" class="timer-btn w-12 h-12 rounded-full text-[11px] font-bold">60</button>
+                            <button onclick="setTimer(0)" id="t0" class="timer-btn active w-12 h-12 rounded-full text-[11px] font-bold uppercase">Off</button>
+                        </div>
+                    </div>
+
                     <button id="mainToggle" class="w-full py-6 bg-white text-black rounded-full font-bold uppercase tracking-widest hover:bg-slate-200 transition-all shadow-xl text-sm">Begin Shielding</button>
                     <p id="status" class="mt-6 text-[11px] uppercase tracking-widest text-white/60 font-black">Atmosphere: Static</p>
+                    <p id="timerDisplay" class="mt-2 text-[9px] uppercase tracking-[0.2em] text-white/30 font-bold hidden">Timer Active</p>
                 </div>
 
                 <div class="grid md:grid-cols-3 gap-12 text-left max-w-5xl mx-auto">
@@ -101,7 +112,7 @@
     </main>
 
     <script>
-        let audioCtx, analyser, mic, gainNode, script, noiseNode;
+        let audioCtx, analyser, mic, gainNode, script, noiseNode, timerTimeout, rainSource;
         let currentMode = 'mist';
         const toggle = document.getElementById('mainToggle');
         const viz = document.getElementById('visualizer');
@@ -143,35 +154,27 @@
         async function initAudio() {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            
             analyser = audioCtx.createAnalyser();
-            analyser.smoothingTimeConstant = 0.85; // Natural glide for bars
-            
+            analyser.smoothingTimeConstant = 0.85; 
             mic = audioCtx.createMediaStreamSource(stream);
             gainNode = audioCtx.createGain();
             script = audioCtx.createScriptProcessor(2048, 1, 1);
-            
             gainNode.connect(audioCtx.destination);
             mic.connect(analyser);
             analyser.connect(script);
             script.connect(audioCtx.destination);
-            
             updateSource();
             gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
 
             script.onaudioprocess = () => {
                 const data = new Uint8Array(analyser.frequencyBinCount);
                 analyser.getByteFrequencyData(data);
-                
                 let max = 0;
                 for (let i = 0; i < bars.length; i++) {
                     let val = data[i * 2] || 0; 
                     if(val > max) max = val;
                     bars[i].style.height = Math.max(10, (val/255)*100) + '%';
                 }
-
-                // Volume reaction: If noisy (>65), fade to 0.7 over 0.2s. 
-                // If quiet, fade back to base 0.15 over 0.8s (the 'smooth' transition)
                 if (max > 65) { 
                     gainNode.gain.setTargetAtTime(0.7, audioCtx.currentTime, 0.2); 
                 } else { 
@@ -180,13 +183,26 @@
             };
         }
 
+        function setTimer(mins) {
+            clearTimeout(timerTimeout);
+            document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('t' + (mins || 0)).classList.add('active');
+            if (mins > 0) {
+                document.getElementById('timerDisplay').innerText = `Stopping in ${mins}m`;
+                document.getElementById('timerDisplay').classList.remove('hidden');
+                timerTimeout = setTimeout(() => { location.reload(); }, mins * 60000);
+            } else {
+                document.getElementById('timerDisplay').classList.add('hidden');
+            }
+        }
+
         function updateSource() {
             if (!audioCtx) return;
             if (noiseNode) { noiseNode.disconnect(); noiseNode = null; }
             rainAudio.pause();
             if (currentMode === 'mist') {
-                const source = audioCtx.createMediaElementSource(rainAudio);
-                source.connect(gainNode); rainAudio.play();
+                if (!rainSource) rainSource = audioCtx.createMediaElementSource(rainAudio);
+                rainSource.connect(gainNode); rainAudio.play();
             } else {
                 noiseNode = createNoise(currentMode); noiseNode.connect(gainNode);
             }
